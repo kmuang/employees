@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Employee Directory</title> 
+  <link rel="shortcut icon" href="img/logo.png" type="image/x-icon">
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 text-slate-900 min-h-screen flex flex-col">
+
+  <!-- Header -->
+  <header class="bg-white shadow-md p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+    <h1 class="text-2xl font-bold text-slate-800 mb-2 sm:mb-0">Employee Directory</h1>
+    <div class="flex items-center gap-2">
+      <input id="searchInput" type="text" placeholder="Search employee..."
+        class="border border-slate-300 rounded-lg px-3 py-2 w-60 focus:outline-none focus:ring-2 focus:ring-blue-400">
+      <select id="departmentFilter"
+        class="border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400">
+        <option value="All">All Departments</option>
+        <option value="Engineering">Engineering</option>
+        <option value="Design">Design</option>
+        <option value="Marketing">Marketing</option>
+        <option value="HR">HR</option>
+      </select>
+    </div>
+  </header>
+
+  <!-- Employee Grid -->
+  <main class="flex-1 p-6 grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4" id="employeeGrid"></main>
+
+  <!-- Modal -->
+  <div id="employeeModal"
+    class="hidden fixed inset-0 bg-black/60 flex items-center justify-center z-50 transition-opacity duration-300">
+    <div class="bg-white rounded-lg shadow-lg p-6 w-11/12 sm:w-96 relative">
+      <button id="closeModal"
+        class="absolute top-2 right-2 text-slate-400 hover:text-slate-600 text-2xl font-bold">&times;</button>
+      <div id="modalContent" class="text-center">
+        <!-- Filled dynamically -->
+      </div>
+    </div>
+  </div>  
+  <footer class="bg-white shadow-md p-4 text-center">
+    <p class="text-slate-500">© 2025 Employee Directory. All rights reserved.</p>
+    </footer>
+  <script>
+    // Mock Employee Data
+    const employees = [
+      { name: 'Ava Johnson', role: 'Software Engineer', dept: 'Engineering', email: 'ava@company.com', phone: '555-123-4567', img: 'https://randomuser.me/api/portraits/women/44.jpg' },
+      { name: 'Liam Smith', role: 'UI/UX Designer', dept: 'Design', email: 'liam@company.com', phone: '555-234-5678', img: 'https://randomuser.me/api/portraits/men/34.jpg' },
+      { name: 'Olivia Brown', role: 'Marketing Lead', dept: 'Marketing', email: 'olivia@company.com', phone: '555-345-6789', img: 'https://randomuser.me/api/portraits/women/40.jpg' },
+      { name: 'Ethan Lee', role: 'Frontend Developer', dept: 'Engineering', email: 'ethan@company.com', phone: '555-456-7890', img: 'https://randomuser.me/api/portraits/men/22.jpg' },
+      { name: 'Sophia Davis', role: 'HR Manager', dept: 'HR', email: 'sophia@company.com', phone: '555-567-8901', img: 'https://randomuser.me/api/portraits/women/31.jpg' },
+      { name: 'Noah Wilson', role: 'Product Designer', dept: 'Design', email: 'noah@company.com', phone: '555-678-9012', img: 'https://randomuser.me/api/portraits/men/25.jpg' },
+      { name: 'Isabella Martinez', role: 'Marketing Specialist', dept: 'Marketing', email: 'isabella@company.com', phone: '555-789-0123', img: 'https://randomuser.me/api/portraits/women/46.jpg' },
+      { name: 'James Anderson', role: 'Backend Engineer', dept: 'Engineering', email: 'james@company.com', phone: '555-890-1234', img: 'https://randomuser.me/api/portraits/men/41.jpg' },
+    ];
+
+    const grid = document.getElementById('employeeGrid');
+    const searchInput = document.getElementById('searchInput');
+    const departmentFilter = document.getElementById('departmentFilter');
+    const modal = document.getElementById('employeeModal');
+    const modalContent = document.getElementById('modalContent');
+    const closeModal = document.getElementById('closeModal');
+
+    function renderEmployees(data) {
+      grid.innerHTML = '';
+      data.forEach(emp => {
+        const card = document.createElement('div');
+        card.className = 'bg-white shadow-md rounded-lg p-4 flex flex-col items-center text-center hover:shadow-xl transition duration-300 cursor-pointer';
+        card.innerHTML = `
+          <img src="${emp.img}" alt="${emp.name}" class="w-20 h-20 rounded-full object-cover mb-3 border-2 border-blue-500">
+          <h3 class="font-semibold text-lg">${emp.name}</h3>
+          <p class="text-sm text-slate-500">${emp.role}</p>
+          <span class="mt-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">${emp.dept}</span>
+        `;
+        card.addEventListener('click', () => openModal(emp));
+        grid.appendChild(card);
+      });
+    }
+
+    function openModal(emp) {
+      modalContent.innerHTML = `
+        <img src="${emp.img}" alt="${emp.name}" class="w-24 h-24 mx-auto rounded-full border-2 border-blue-500 mb-4">
+        <h2 class="text-xl font-semibold">${emp.name}</h2>
+        <p class="text-slate-500">${emp.role}</p>
+        <p class="text-sm mt-2"><span class="font-semibold">Department:</span> ${emp.dept}</p>
+        <p class="text-sm mt-1"><span class="font-semibold">Email:</span> ${emp.email}</p>
+        <p class="text-sm mt-1"><span class="font-semibold">Phone:</span> ${emp.phone}</p>
+      `;
+      modal.classList.remove('hidden');
+    }
+
+    closeModal.addEventListener('click', () => {
+      modal.classList.add('hidden');
+    });
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) modal.classList.add('hidden');
+    });
+
+    function filterEmployees() {
+      const query = searchInput.value.toLowerCase();
+      const dept = departmentFilter.value;
+      const filtered = employees.filter(emp =>
+        (dept === 'All' || emp.dept === dept) &&
+        (emp.name.toLowerCase().includes(query) || emp.role.toLowerCase().includes(query))
+      );
+      renderEmployees(filtered);
+    }
+
+    searchInput.addEventListener('input', filterEmployees);
+    departmentFilter.addEventListener('change', filterEmployees);
+
+    renderEmployees(employees);
+  </script>
+
+</body>
+</html>
